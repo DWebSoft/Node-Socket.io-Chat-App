@@ -4,7 +4,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const port = process.env.PORT || 3000;
 
-const {generateMessage}  = require('./utils/message');
+const {generateMessage, generateLocationMessage}  = require('./utils/message');
 const publicPath = path.join(__dirname, '../public');
 
 //create app
@@ -30,13 +30,19 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user connected!'));
 
     //Listen for createMessage
-    socket.on('createMessage', (message) => {
+    socket.on('createMessage', (message, callback) => {
         console.log(message);
 
         //Emit newMessage to all connected clients
         io.emit('newMessage', generateMessage(message.from, message.text));
+        callback();
     })
 
+    //Listen createLocationMessage
+    socket.on('createLocationMessage',(cords) => {
+        console.log(cords);
+        io.emit('newLocationMessage', generateLocationMessage('Admin', cords.latitude, cords.longitude));
+    });
     socket.on('disconnect', () => {
         console.log('User was disconnected');
     });
