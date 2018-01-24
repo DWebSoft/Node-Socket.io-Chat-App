@@ -34,8 +34,7 @@ io.on('connection', (socket) => {
         console.log(message);
 
         //Emit newMessage to all connected clients
-        message.createdAt = new Date().toString();
-        io.emit('newMessage', generateMessage(message.from, message.from));
+        io.emit('newMessage', generateMessage(message.from, message.text));
     })
 
     socket.on('disconnect', () => {
