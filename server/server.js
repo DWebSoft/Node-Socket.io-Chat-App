@@ -26,9 +26,9 @@ io.on('connection', (socket) => {
     socket.on('createMessage', (message) => {
         console.log(message);
 
-        //Emit newMessage
-        message.createdAt = new Date();
-        socket.emit('newMessage', message);
+        //Emit newMessage to all connected clients
+        message.createdAt = new Date().toString();
+        io.emit('newMessage', message);
     })
 
     socket.on('disconnect', () => {
