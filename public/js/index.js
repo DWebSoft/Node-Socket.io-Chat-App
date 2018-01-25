@@ -12,7 +12,6 @@ var unreadMessagesContainer = jQuery('.unread-messages');
 
 //Check when user scrolled to bottom
 jQuery(messageContainer).on('scroll', function(){
-    alert(messageContainer.prop('scrollTopMax'));
     if (messageContainer.prop('scrollTopMax') == messageContainer.prop('scrollTop') ){
         //Scroll to bottom
         hideUnreadMessages();
