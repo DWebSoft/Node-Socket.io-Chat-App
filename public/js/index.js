@@ -7,6 +7,49 @@ socket.on('connect', function(){
 });
 
 var messageContainer = jQuery('#messages');
+var unreadMessages = 0;
+var unreadMessagesContainer = jQuery('.unread-messages');
+
+//Check when user scrolled to bottom
+jQuery(messageContainer).on('scroll', function(){
+    if (messageContainer.prop('scrollTopMax') == messageContainer.prop('scrollTop') ){
+        //Scroll to bottom
+        hideUnreadMessages();
+    }
+});
+
+function showUnreadMessages(){
+    unreadMessagesContainer.text(unreadMessages);
+    unreadMessagesContainer.fadeIn(); 
+}
+
+function hideUnreadMessages() {
+    unreadMessagesContainer.fadeOut();
+    unreadMessages = 0;
+    unreadMessagesContainer.text(unreadMessages);
+}
+/*
+Only scroll when we are somewhat near to the last message.
+If we are reading archive messages we don't need to scroll down
+*/
+function scrollToBottom(){
+    var clientHeight = messageContainer.prop('clientHeight');
+    var scrollTop = messageContainer.prop('scrollTop');
+    var scrollHeight = messageContainer.prop('scrollHeight');
+    var newMessage = messageContainer.children('li:last-child');
+    var newMessageHeight = newMessage.innerHeight();
+    var lastMessageHeight = newMessage.prev().innerHeight();
+
+    if( clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight ){
+        messageContainer.scrollTop(scrollHeight);
+        hideUnreadMessages();
+    }else{
+        if ( clientHeight + scrollTop != scrollHeight){
+            unreadMessages++;
+            showUnreadMessages();    
+        }
+    }
+}
 //Listen to newMessage
 socket.on('newMessage', function(message){
     console.log('new message', message);
@@ -18,6 +61,7 @@ socket.on('newMessage', function(message){
         createdAt: formattedTime
     });
     messageContainer.append(html);
+    scrollToBottom();
 });
 
 //Listen to newLocationMessage
