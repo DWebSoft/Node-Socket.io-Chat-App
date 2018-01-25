@@ -74,6 +74,7 @@ socket.on('newLocationMessage', function(message){
         createdAt: formattedTime
     });
     messageContainer.append(html);
+    scrollToBottom();
 });
 
 socket.on('disconnect', function(){
