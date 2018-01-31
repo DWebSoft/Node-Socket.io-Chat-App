@@ -59,17 +59,21 @@ io.on('connection', (socket) => {
 
     //Listen for createMessage
     socket.on('createMessage', (message, callback) => {
-        console.log(message);
+        var user = users.getUser(socket.id);
 
-        //Emit newMessage to all connected clients
-        io.emit('newMessage', generateMessage(message.from, message.text));
+        if(user && isRealString(message.text)){
+            //Emit newMessage to all connected clients
+            io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+        }
         callback();
     })
 
     //Listen createLocationMessage
     socket.on('createLocationMessage',(cords) => {
-        console.log(cords);
-        io.emit('newLocationMessage', generateLocationMessage('Admin', cords.latitude, cords.longitude));
+        var user = users.getUser(socket.id);
+        if(user){
+            io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, cords.latitude, cords.longitude));
+        }
     });
     socket.on('disconnect', () => {
         var user = users.removeUser(socket.id);
