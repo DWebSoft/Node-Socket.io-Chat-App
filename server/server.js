@@ -5,8 +5,12 @@ const socketIO = require('socket.io');
 const port = process.env.PORT || 3000;
 
 const {generateMessage, generateLocationMessage}  = require('./utils/message');
-const {isRealString} = require('./utils/validation');
+const { isRealString } = require('./utils/validation');
+const {Users} = require('./utils/users');
 const publicPath = path.join(__dirname, '../public');
+
+//Create a global users object
+var users = new Users();
 
 //create app
 var app = express();
@@ -34,6 +38,12 @@ io.on('connection', (socket) => {
         socket.join(params.room);
         //socket.leave(params.room)
 
+        //First remove the user from any other chatroom
+        users.removeUser(socket.id);
+        users.addUser(socket.id, params.name, params.room);
+
+        io.to(params.room).emit('updateUsersList', users.getUserList(params.room));
+
         // io.emit => io.to('room name').emit
         // socket.broadcast.emit => socket.broadcast.to('room name').emit
         // socket.emit
@@ -41,7 +51,7 @@ io.on('connection', (socket) => {
         // Welcome User
         socket.emit('newMessage', generateMessage("Admin", "Welcome to the chat app!"));
 
-        // Notify Everyone in the room
+        // Notify Everyone(except user itself) in the room
         socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} connected!`));
 
         callback();
@@ -62,7 +72,9 @@ io.on('connection', (socket) => {
         io.emit('newLocationMessage', generateLocationMessage('Admin', cords.latitude, cords.longitude));
     });
     socket.on('disconnect', () => {
-        console.log('User was disconnected');
+        var user = users.removeUser(socket.id);
+        io.to(user.room).emit('updateUsersList', users.getUserList(user.room));
+        io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left`));
     });
 }) 
 
